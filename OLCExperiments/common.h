@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
+#include <execution>
 
 struct Vec3
 {

@@ -6,29 +6,38 @@ void Game::Mesh::Draw(Game& g)
 	Mat4x4 tMat = Mat4x4::Translate(translation);
 	Mat4x4 transfMat = Mat4x4::Multiply(rMat, tMat);
 	Mat4x4 projection = Mat4x4::Perspective(g.GetFOV(), g.GetZNear(), g.GetZFar(), g.GetAspect());
+	std::vector<Triangle> projTris;
 	if (!indexed)
 	{
-		for (auto t : tris)
+		projTris.resize(tris.size());
+		std::transform(std::execution::par, tris.begin(), tris.end(), projTris.begin(), [&,this](Triangle t)
 		{
-			TriProject(g, transfMat, projection, t);
-		}
+			return TriProject(g, transfMat, projection, t);
+		});
+		g.tList.insert(g.tList.end(), projTris.begin(), projTris.end());
 	}
 	else
 	{
+		projTris.resize(indTri.size());
+		int i = 0;
 		for (auto it : indTri)
 		{
-			Triangle t = {
+			projTris[i++] = {
 				indVerts[it.v[0]],
 				indVerts[it.v[1]],
 				indVerts[it.v[2]],
 				it.c
 			};
-			TriProject(g, transfMat, projection, t);
 		}
+		std::transform(std::execution::par, projTris.begin(), projTris.end(), projTris.begin(), [&, this](Triangle t)
+		{
+			return TriProject(g, transfMat, projection, t);
+		});
+		g.tList.insert(g.tList.end(), projTris.begin(), projTris.end());
 	}
 }
 
-void Game::Mesh::TriProject(Game& g, Mat4x4& transfMat, Mat4x4& projection, Triangle& t)
+Triangle Game::Mesh::TriProject(Game& g, Mat4x4& transfMat, Mat4x4& projection, Triangle& t)
 {
 	Triangle transformTri, projectedTri;
 	transformTri = transfMat.Transform(t);
@@ -77,7 +86,7 @@ void Game::Mesh::TriProject(Game& g, Mat4x4& transfMat, Mat4x4& projection, Tria
 			olc::WHITE);*/
 		//FillTriZ(g, projectedTri);
 
-		g.tList.push_back(projectedTri);
+		return projectedTri;
 	}
 
 }

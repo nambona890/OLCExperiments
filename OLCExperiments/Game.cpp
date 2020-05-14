@@ -17,13 +17,7 @@ bool Game::OnUserUpdate(float fElapsedTime)
 {
 	tList.clear();
 	std::fill(zBuf.begin(), zBuf.end(), zFar);
-	for (int i = 0; i < ScreenWidth(); i++)
-	{
-		for (int j = 0; j < ScreenHeight(); j++)
-		{
-			Draw(i, j, olc::BLACK);
-		}
-	}
+	Clear(olc::BLACK);
 	cube1->rotation.y += fElapsedTime;
 	cube1->rotation.x += fElapsedTime * 0.5f;
 
@@ -41,6 +35,10 @@ bool Game::OnUserUpdate(float fElapsedTime)
 
 void Game::DrawTris()
 {
+	std::sort(tList.begin(), tList.end(), [](Triangle a, Triangle b)
+	{
+		return (a.v[0].z + a.v[1].z + a.v[2].z) / 3.0f > (b.v[0].z + b.v[1].z + b.v[2].z) / 3.0f;
+	});
 	for (auto t : tList)
 	{
 		//FillTriangle(t.v[0].x, t.v[0].y, t.v[1].x, t.v[1].y, t.v[2].x, t.v[2].y, t.c);
