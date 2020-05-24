@@ -15,6 +15,7 @@ bool Game::OnUserCreate()
 
 bool Game::OnUserUpdate(float fElapsedTime)
 {
+	olc::Sprite* buffer = new olc::Sprite(ScreenWidth(),ScreenHeight());
 	tList.clear();
 	std::fill(zBuf.begin(), zBuf.end(), zFar);
 	Clear(olc::BLACK);
@@ -27,9 +28,24 @@ bool Game::OnUserUpdate(float fElapsedTime)
 	cube2->rotation.x -= fElapsedTime * 0.3f;
 
 	cube2->Draw(*this);
-
+	SetDrawTarget(buffer);
 	DrawTris();
+	SetDrawTarget(nullptr);
+	DrawSprite(0, 0, buffer);
+	if (GetKey(olc::Key::C).bPressed)
+	{
+		std::vector<unsigned char> imgBuf(zBuf.size());
+		for (int i=0;i<imgBuf.size();i++)
+		{
+			imgBuf[i] = (unsigned char)(((zBuf[i] - zNear) / zFar)*255);
+		}
+		std::ofstream output("./zbuffer.raw"); //1 channel 512x480
+		std::ostream_iterator<unsigned char> outputI(output);
+		std::copy(imgBuf.begin(), imgBuf.end(), outputI);
 
+		buffer->SaveToPGESprFile("./frame.raw"); //4 channel interleaved transparency 512x480
+	}
+	delete buffer;
 	return true;
 }
 

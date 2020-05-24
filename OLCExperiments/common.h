@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <execution>
+#include <fstream>
 
 struct Vec3
 {
